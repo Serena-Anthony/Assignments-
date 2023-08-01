@@ -1,0 +1,512 @@
+ASSIGNMENT-3
+
+Q2.Write a Program to calculate the sum of numbers in an integer array of size ‘n’.
+
+section .data
+	msg1:db 'Enter number of elements:'
+	l1:equ $-msg1
+	msg2:db 'Enter each element of array:'
+	l2:equ $-msg2
+	msg3: db 'Sum of entered array elements:'
+	l3: equ $-msg3
+	
+section .bss
+num: resw 1
+temp: resw 1
+count: resw 1
+array: resw 100
+n: resw 1
+sum: resw 1
+	
+section .text
+global _start:
+	_start:
+	mov eax,4
+     	mov ebx,1
+	mov ecx,msg1
+	mov edx,l1
+	int 80h
+	call read_num
+	mov ax,word[num]
+	mov word[n],ax
+	
+	mov ebx,array
+	mov eax,0 
+	call read_array
+	
+	mov ebx,array
+	mov eax,0
+	call find_sum
+	end: 	
+	mov eax,1
+	mov ebx,0
+	int 80h
+
+read_array:
+	pusha
+	read_loop:
+		cmp eax,dword[n]
+		je end_aread
+		call print_msg
+		call read_num
+		mov cx,word[num]
+		mov word[ebx+2*eax],cx
+		inc eax
+		jmp read_loop
+	end_aread:
+		popa
+		ret
+		
+find_sum:
+	pusha
+	mov dx,0
+	sum_loop:
+		cmp eax,dword[n]
+		je end_asum
+		mov cx,word[ebx+2*eax]
+		add dx,cx
+		inc eax
+		jmp sum_loop
+	end_asum:
+		mov word[num],dx
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg3
+		mov edx,l3
+		int 80h	
+		call print_num
+		popa
+		ret
+	
+print_msg:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg2
+	mov edx,l2
+	int 80h	
+	popa
+	ret
+	
+read_num:
+	pusha 
+	mov word[num],0
+	reading:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		cmp word[temp],10
+		je end_read
+		mov ax,word[num]
+		mov bx,10
+		mul bx
+		mov bx,word[temp]
+		sub bx,30h
+		add ax,bx
+		mov word[num],ax
+		jmp reading
+	
+	end_read:
+		popa
+		ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret
+
+
+
+Q6.Write a program to read two nXm matrices, A and B, and compute the sum C = A + B.
+
+section .data
+tab: db 9
+newline: db 10
+msg1: db 'Enter number of rows:'
+l1: equ $-msg1
+msg2: db 'Enter number of columns:'
+l2: equ $-msg2
+msg3: db 'Enter elements of matrix:'
+l3: equ $-msg3
+msg4: db 'Sum of the two matrices',10
+l4: equ $-msg4
+
+section .bss
+num: resw 1
+n: resw 1
+m: resw 1
+i: resw 1
+j: resw 1
+matrix1: resw 200
+matrix2: resw 200
+temp: resw 1
+count: resw 1
+prod: resw 1
+
+section .text
+global _start:
+_start:
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg1
+    mov edx,l1
+    int 80h
+    call read_num
+    mov ax,word[num]
+    mov word[n],ax
+    
+    
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg2
+    mov edx,l2
+    int 80h
+    call read_num
+    mov ax,word[num]
+    mov word[m],ax
+
+    mov ebx,matrix1
+    mov eax,0
+    call read_matrix
+    
+    mov ebx,matrix1
+    mov eax,0
+    call print_matrix
+   
+    mov ebx,matrix2
+    mov eax,0
+    call read_matrix
+    
+    mov ebx,matrix2
+    mov eax,0
+    call print_matrix
+    
+    mov ax,word[m]
+    mov bx,word[n]
+    mul bx
+    mov word[prod],ax
+    mov eax,0
+    mov ebx,matrix1
+    mov ecx,matrix2
+    call add_matrix
+    
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg4
+    mov edx,l4
+    int 80h
+    
+    mov ebx,matrix1
+    mov eax,0
+    call print_matrix
+	
+    end:
+    mov eax,1
+    mov ebx,0
+    int 80h
+        
+add_matrix:
+	pusha
+	loop:
+		mov dx,word[ebx+2*eax]
+		add dx,word[ecx+2*eax]
+		mov word[ebx+2*eax],dx
+		inc eax
+		cmp eax,dword[prod]
+		jb loop
+	end_loop:
+		popa
+		ret	
+	
+
+read_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	i_loop:
+		mov word[j], 0
+	j_loop:
+		call print_msg
+		call read_num
+		mov dx , word[num]
+		mov word[ebx+2*eax], dx
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[n]
+		jb j_loop
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[m]
+	jb i_loop
+	end_mread:
+		popa
+		ret    
+
+
+print_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	ip_loop:
+		mov word[j], 0
+	jp_loop:
+		mov dx,word[ebx+2*eax]
+		mov word[num],dx
+		call print_num
+		call print_tab
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[n]
+		jb jp_loop
+	call print_newline
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[m]
+	jb ip_loop
+	end_mprint:
+		popa
+		ret    
+
+
+print_msg:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg3
+	mov edx,l3
+	int 80h
+	popa
+	ret
+	
+print_tab:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,tab
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+print_newline:
+	pusha	
+	mov eax,4
+	mov ebx,1
+	mov ecx,newline
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+read_num:
+	pusha 
+	mov word[num],0
+	reading:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		cmp word[temp],10
+		je end_read
+		mov ax,word[num]
+		mov bx,10
+		mul bx
+		mov bx,word[temp]
+		sub bx,30h
+		add ax,bx
+		mov word[num],ax
+		jmp reading
+	
+	end_read:
+		popa
+		ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret
+
+
+Q10. Write a program to read a string and a symbol and count the number of times the symbol is present in the string.
+
+section .data
+	msg1: db 'Enter a string:'
+	l1:equ $-msg1
+	msg2: db 'Enter a special character:'
+	l2:equ $-msg2
+	msg3: db 'Frequency of special character:'
+	l3:equ $-msg3
+
+section .bss
+	num: resw 1
+	count: resw 1
+	temp: resw 1
+	string_len: resb 1
+	string: resb 100
+	symbol: resb 1
+	i: resb 1
+	
+section .text
+global _start:
+_start:
+	mov word[i],0
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg1
+	mov edx,l1
+	int 80h
+	
+	mov ebx,string
+	call read_string
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg2
+	mov edx,l2
+	int 80h
+	
+	mov eax,3
+	mov ebx,0
+	mov ecx,symbol
+	mov edx,1
+	int 80h
+	mov ebx,string
+	counting:
+		mov al, byte[ebx]
+		cmp al, 0
+		je end
+		cmp al, byte[symbol]
+		je inc_count
+		next:
+			inc ebx
+			jmp counting
+	inc_count:
+		inc byte[i]
+		jmp next
+		
+	end:
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg3
+		mov edx,l3
+		int 80h
+		mov ax,word[i]
+		mov word[num],ax
+		call print_num
+		mov eax,1
+		mov ebx,0
+		int 80h
+	
+read_string:
+	pusha
+	reading:
+		push ebx
+		mov eax, 3
+		mov ebx, 0
+		mov ecx, temp
+		mov edx, 1
+		int 80h
+		pop ebx
+		cmp byte[temp], 10 
+		je end_reading
+		inc byte[string_len]
+		mov al,byte[temp]
+		mov byte[ebx], al
+		inc ebx
+		jmp reading
+	end_reading:
+	mov byte[ebx], 0
+	mov ebx, string
+	popa
+	ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret

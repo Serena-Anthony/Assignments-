@@ -1,0 +1,109 @@
+Q2.Write a Program to calculate the sum of numbers in an integer array of size ‘n’.
+
+section .data
+msg1: db 'enter no of elements'
+l1: equ $-msg1
+msg2: db 'enter each element of array'
+l2: equ $-msg2
+msg3: db'the sum of no'
+l3: equ $-msg3
+zero: db '0'
+lz: equ $-zero
+space: db ' '
+ls: equ $-space
+
+section .bss
+num : resw 1
+temp : resw 1
+count : resw 1
+n : resw 1
+array : resw 100
+sum : resw 1
+read: resw 1
+print : resw 1
+
+section .text
+global_start:
+    _start:
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, msg1
+    mov edx, l1
+    int 80h
+    call read_num
+    mov ax, word[num]
+    mov word[n], ax
+
+    mov ebx,array
+    mov eax, 0
+    call read_array
+
+    mov ebx, array
+    mov eax, 0
+    call find_sum
+
+    end:
+    mov eax,1
+    mov ebx, 0
+    int 80h
+
+read_array:
+pusha
+    read_loop:
+        cmp eax, dword[n];
+        je end_aread
+
+        call print_msg
+        call read_num
+        mov cx, word[num]
+        mov word[ebx+ 2*eax], cx
+        inc eax
+        jmp read_loop
+
+    end_aread:
+    popa
+    ret
+
+find_sum:
+pusha
+mov dx, 0
+sum_loop:
+    cmp eax, dword[n]
+    je end_sum
+
+    mov cx, word[ebx+ 2*eax]
+    add dx, cx
+    inc eax
+    jmp sum_loop
+
+end_asum:
+    mov word[num], dx
+    mov eax, 4
+    mov ebx, 1
+    mov edx, msg3
+    mov edx, l3
+    int 80h
+    call print_num
+    popa
+    ret
+
+
+print_msg:
+pusha
+mov eax, 4
+mov ebx, 1
+mov ecx, msg2
+mov edx, l2
+int 80h
+popa
+ret
+
+read_num:
+pusha
+mov word[num], 0
+reading:
+    mov eax, 3
+    mov ebx, 1
+    mov ecx, temp
+    mov edx, 1
+    

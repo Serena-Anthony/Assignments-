@@ -1,0 +1,1351 @@
+1. Given two sorted two-digit integer arrays of sizes n and m, write a program to merge them into a new sorted array of size n+m.
+
+section .data
+	msg1: db "Enter size of Array1: "
+	size1: equ $-msg1
+	msg2: db "Enter the Elements of Array1: "
+	size2: equ $-msg2
+	msg3: db "Elements after sorting: "
+	size3: equ $-msg3
+	msg4: db " "
+	size4: equ $-msg4
+	msg5: db 0Ah
+	size5: equ $-msg5
+	msg6: db "Enter size of Array2: "
+	size6: equ $-msg6
+	msg7: db "Enter the elements of Array2: "
+	size7: equ $-msg7
+
+section .bss
+	n: resw 1
+	n2: resw 1
+	n3: resw 1
+	nt : resw 1
+	temp1: resb 1
+	array: resw 100
+	count: resw 1
+	counta2: resw 1
+	count1: resw 1
+	count2: resw 1
+	temp2: resw 1
+	temp3: resw 1
+	nod:resb 1
+
+section .text
+	global _start:
+	_start:
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg1
+		mov edx,size1
+		int 80h
+
+		mov word[n],0
+		mov word[n2],0
+		mov word[n3],0
+		mov word[nt],0
+
+		read_n:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp1
+		mov edx,1
+		int 80h
+
+		cmp byte[temp1],10
+		je arr_2
+
+		mov ax,word[n]
+		mov bx,10
+		mul bx
+		movzx bx,byte[temp1]
+		sub bx,30h
+		add ax,bx
+		mov word[n],ax
+		jmp read_n
+		
+		;n contain size of array 1
+
+		arr_2:
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg6
+		mov edx,size6
+		int 80h
+
+		read_n2:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp1
+		mov edx,1
+		int 80h
+
+		cmp byte[temp1],10
+		je add_size
+
+		mov ax,word[n3]
+		mov bx,10
+		mul bx
+		movzx bx,byte[temp1]
+		sub bx,30h
+		add ax,bx
+		mov word[n3],ax
+		jmp read_n2
+		 
+		; n3 contain size of array 2
+
+		add_size:
+		mov ax,word[n3]
+		mov dx,word[n]
+		mov word[nt],dx
+		add word[nt],ax
+		
+
+		read_array_elem:
+
+		mov ebx,array
+		read_array_1:
+		push ebx
+		mov word[n2],0
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg2
+		mov edx,size2
+		int 80h
+
+		read_ele:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp1
+		mov edx,1
+		int 80h
+
+		cmp byte[temp1],10
+		je read_continue
+
+		mov ax,word[n2]
+		mov bx,10
+		mul bx
+		movzx bx,byte[temp1]
+		sub bx,30h
+		add ax,bx
+		mov word[n2],ax
+		jmp read_ele
+
+		read_continue:
+		pop ebx
+		mov cx,word[n2]
+		mov word[ebx],cx
+		add bx,16
+		add word[count],1
+		mov cx,word[count]
+		cmp cx,word[n]
+		je read_array_2
+
+		jmp read_array_1
+        
+
+		read_array_2:
+
+		push ebx
+		mov word[n2],0
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg7
+		mov edx,size7
+		int 80h
+
+		read_ele_2:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp1
+		mov edx,1
+		int 80h
+
+		cmp byte[temp1],10
+		je read_continue_2
+
+		mov ax,word[n2]
+		mov bx,10
+		mul bx
+		movzx bx,byte[temp1]
+		sub bx,30h
+		add ax,bx
+		mov word[n2],ax
+		jmp read_ele_2
+
+		read_continue_2:
+		pop ebx
+		mov cx,word[n2]
+		mov word[ebx],cx
+		add bx,16
+		add word[counta2],1
+		mov cx,word[counta2]
+		cmp cx,word[n3]
+		je bubble_sort
+
+		jmp read_array_2
+
+		bubble_sort:
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg3
+		mov edx,size3
+		int 80h
+		mov word[count1],0
+		mov word[count2],0
+		mov ebx,array
+		mov edx,array
+		mov ax,word[nt]
+		push ax
+		for1:
+		pop ax
+		cmp word[count1],ax
+		je print_array
+		push ax
+		mov edx,ebx
+		mov cx,word[count1]
+		mov word[count2],cx
+		for2:
+		pop ax
+		cmp word[count2],ax
+		je after_for2
+		push ax
+		mov ax,word[ebx]
+		mov cx,word[edx]
+		cmp ax,cx
+		jl no_swap
+			swap:
+			   mov word[ebx],cx
+			   mov word[edx],ax
+		no_swap:
+		inc word[count2]
+		add edx,16
+		jmp for2
+		after_for2:
+		push ax
+		inc word[count1]
+		add ebx,16
+		jmp for1
+
+		print_array:
+		mov word[count1],0
+		mov ebx,array
+
+		printloop:
+		mov ax,word[nt]
+		cmp ax,word[count1]
+		je exit
+		mov cx,word[ebx]
+		mov word[count],cx
+
+		mov byte[nod],0
+
+		number_extract:
+		cmp word[count],0
+		je print_no
+		inc byte[nod]
+		mov dx,0
+		mov ax,word[count]
+		mov bx,10
+		div bx
+		push dx
+		mov word[count],ax
+		jmp number_extract
+
+		print_no:
+		cmp byte[nod],0
+		je after_print_no
+		dec byte[nod]
+		pop dx
+		mov word[temp1],dx
+		add word[temp1],30h
+
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp1
+		mov edx,1
+		int 80h
+		jmp print_no
+
+		after_print_no:
+
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg4
+		mov edx,size4
+		int 80h
+
+		inc word[count1]
+		mov eax,16
+		mul word[count1]
+		mov ebx,array
+		add ebx,eax
+		jmp printloop
+
+		exit:
+		mov eax,4
+		mov ebx,1
+		mov ecx,msg5
+		mov edx,size5
+		int 80h
+
+		mov eax,1
+		mov ebx,0
+		int 80h
+
+_______________________________________________________________________________________
+
+2.Write a program to read a n x m matrix and print the transpose
+
+section .data
+tab: db 9
+newline: db 10
+msg1: db 'Enter number of rows:'
+l1: equ $-msg1
+msg2: db 'Enter number of columns:'
+l2: equ $-msg2
+msg3: db 'Enter each element:'
+l3: equ $-msg3
+msg4: db 'Transpose of the matrix',10
+l4: equ $-msg4
+
+section .bss
+num: resw 1
+n: resw 1
+m: resw 1
+c: resw 1
+r: resw 1
+i: resw 1
+j: resw 1
+matrix1: resw 200
+matrix2: resw 200
+temp: resw 1
+count: resw 1
+prod: resw 1
+
+section .text
+global _start:
+_start:
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg1
+    mov edx,l1
+    int 80h
+    call read_num
+    mov ax,word[num]
+    mov word[n],ax
+    
+    
+    mov eax,4
+    mov ebx,1
+    mov ecx,msg2
+    mov edx,l2
+    int 80h
+    call read_num
+    mov ax,word[num]
+    mov word[m],ax
+
+    mov ebx,matrix1
+    mov eax,0
+    call read_matrix
+    
+    mov ebx,matrix1
+    mov eax,0
+    call print_matrix
+    
+    mov esi,matrix1
+    mov edi,matrix2
+    mov ecx,0
+    mov edx,0
+    call transpose
+    call print_msg4
+    
+    mov ax,word[m]
+    mov bx,word[n]
+    mov word[m],bx
+    mov word[n],ax
+    mov ebx,matrix2
+    mov eax,0
+    call print_matrix
+    
+    end:
+    mov eax,1
+    mov ebx,0
+    int 80h
+    
+transpose:
+ 	pusha
+ 	mov word[i],0
+ 	mov word[j],0
+ 	
+ 	loop1:
+ 		mov word[j],0
+ 		loop2:
+	 		mov ax,word[esi+2*ecx]
+	 		mov word[edi+2*edx],ax
+	 		inc word[j]
+	 		inc edx
+	 		add cx,word[m]
+	 		mov ax,word[n]
+	 		cmp ax,word[j]
+	 		ja loop2
+	 	inc word[i]
+	 	inc esi
+	 	inc esi
+	 	mov ax,word[i]
+	 	cmp ax,word[m]
+	 	mov ecx,0
+	 	jb loop1
+	 	
+	end_loop1:			
+ 	popa
+ 	ret
+    
+print_msg4:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg4
+	mov edx,l4
+	int 80h
+	popa
+	ret
+read_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	i_loop:
+		mov word[j], 0
+	j_loop:
+		call print_msg
+		call read_num
+		mov dx , word[num]
+		mov word[ebx+2*eax], dx
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[m]
+		jb j_loop
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[n]
+	jb i_loop
+	end_mread:
+		popa
+		ret    
+
+
+print_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	ip_loop:
+		mov word[j], 0
+	jp_loop:
+		mov dx,word[ebx+2*eax]
+		mov word[num],dx
+		call print_num
+		call print_tab
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[m]
+		jb jp_loop
+	call print_newline
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[n]
+	jb ip_loop
+	end_mprint:
+		popa
+		ret    
+
+
+print_msg:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg3
+	mov edx,l3
+	int 80h
+	popa
+	ret
+	
+print_tab:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,tab
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+print_newline:
+	pusha	
+	mov eax,4
+	mov ebx,1
+	mov ecx,newline
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+read_num:
+	pusha 
+	mov word[num],0
+	reading:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		cmp word[temp],10
+		je end_read
+		mov ax,word[num]
+		mov bx,10
+		mul bx
+		mov bx,word[temp]
+		sub bx,30h
+		add ax,bx
+		mov word[num],ax
+		jmp reading
+	
+	end_read:
+		popa
+		ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret
+___________________________________________________________________________
+3.Write a program to read a n x n matrix and find the sum of the squares of the elements in the principal diagonal and print it.
+
+section .data
+tab: db 9
+newline: db 10
+msg1: db 'Enter number of rows/columns:'
+l1: equ $-msg1
+msg2: db 'Enter elements of matrix:'
+l2: equ $-msg2
+msg3: db 'Sum of squares of principal diagonal elements',10
+l3: equ $-msg3
+msg4: db 'Entered',10
+l4:equ $-msg4
+
+section .bss
+num: resw 1
+n: resw 1
+i: resw 1
+j: resw 1
+k: resw 1
+matrix: resw 200
+temp: resw 1
+count: resw 1
+sq: resw 1
+sum_sq: resw 1
+
+section .text
+global _start:
+_start:
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg1
+	mov edx,l1
+	int 80h
+	call read_num
+	
+	mov ax,word[num]
+	mov word[n],ax
+	
+	mov ebx,matrix
+	mov eax,0
+	call read_matrix
+	
+	mov ebx,matrix
+	mov eax,0
+	call print_matrix
+	call print_msg3
+	
+	mov ebx,matrix
+	mov ecx,0
+	mov word[sum_sq],0
+	call find_sumsq
+	mov ax,word[sum_sq]
+	mov word[num],ax
+	call print_num
+	
+	end:
+		mov eax,1
+		mov ebx,0
+		int 80h
+
+
+find_sumsq:
+    pusha
+    mov dx,word[n]
+    mov word[i],0
+    sum_loop:
+    	mov ax,word[ebx+2*ecx]
+    	mov word[sq],ax
+    	mul word[sq]
+    	add ax,word[sum_sq]
+    	mov word[sum_sq],ax
+    	inc word[i]
+    	mov word[k],0
+    	looping:
+    		inc ecx
+    		inc word[k]
+    		mov dx,word[k]
+    		cmp dx,word[n]
+    		jbe looping
+    	mov dx,word[n]
+
+    	cmp dx,word[i]
+    	ja sum_loop
+    popa
+    ret
+    
+
+read_num:
+	pusha 
+	mov word[num],0
+	reading:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		cmp word[temp],10
+		je end_read
+		mov ax,word[num]
+		mov bx,10
+		mul bx
+		mov bx,word[temp]
+		sub bx,30h
+		add ax,bx
+		mov word[num],ax
+		jmp reading
+	
+	end_read:
+		popa
+		ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret
+		
+read_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	i_loop:
+		mov word[j], 0
+	j_loop:
+		call print_msg
+		call read_num
+		mov dx , word[num]
+		mov word[ebx+2*eax], dx
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[n]
+		jb j_loop
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[n]
+	jb i_loop
+	end_mread:
+		popa
+		ret   
+		
+print_matrix:
+	pusha
+	mov word[i], 0
+	mov word[j], 0
+	ip_loop:
+		mov word[j], 0
+	jp_loop:
+		mov dx,word[ebx+2*eax]
+		mov word[num],dx
+		call print_num
+		call print_tab
+		inc eax 
+		inc word[j]
+		mov cx, word[j]
+		cmp cx, word[n]
+		jb jp_loop
+	call print_newline
+	inc word[i]
+	mov cx, word[i]
+	cmp cx, word[n]
+	jb ip_loop
+	end_mprint:
+		popa
+		ret    
+print_msg:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg2
+	mov edx,l2
+	int 80h
+	popa
+	ret
+	
+print_msg3:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg3
+	mov edx,l3
+	int 80h
+	popa
+	ret
+	
+print_msg4:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg4
+	mov edx,l4
+	int 80h
+	popa
+	ret
+	
+print_tab:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,tab
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+print_newline:
+	pusha	
+	mov eax,4
+	mov ebx,1
+	mov ecx,newline
+	mov edx,1
+	int 80h
+	popa
+	ret
+__________________________________________________________________________________________
+
+4.Write a program to check whether a given word is present in a given sentence. If present, count the number of occurrences of the given word in the given sentence
+
+section .data
+	string_len: dw 0
+	lost_len:   dw 0
+	cnt: 		db 0
+	newline:	db 10
+	msg1: db "Enter the sentence : "
+	size1: equ $-msg1	
+	msg2: db "Enter the word to search: "
+	size2: equ $-msg2
+	msg3: db "The Word is present and the frequency of it is : "
+	size3: equ $-msg3
+	msg4: db "The Word is not present in the sentence.",10
+	size4: equ $-msg4
+	zero: db '0'
+	zerol: equ $-zero
+	wordcounter:	dw 0
+	
+section .bss
+	string: resb 200
+	lost: resb 50
+	temp: resb 1
+	sym:	resb 1
+	extra:resb 1
+	num: 	resw 1
+	count:resb 10
+	i:	resw 1
+	j:	resw 1
+	
+	
+section .data
+	global _start
+_start:
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, msg1
+	mov edx, size1
+	int 80h
+	
+	mov ebx, string
+reading:
+	push ebx
+	mov eax, 3
+	mov ebx, 0
+	mov ecx, temp
+	mov edx, 1
+	int 80h
+	pop ebx
+	cmp byte[temp], 10
+	je end_reading
+	inc byte[string_len]
+	mov al,byte[temp]
+	mov byte[ebx], al
+	inc ebx
+	jmp reading
+
+end_reading:
+	mov byte[ebx], 32
+	push ebx
+	
+	
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, msg2
+	mov edx, size2
+	int 80h
+	
+	mov ebx, lost
+readingL:
+	push ebx
+	mov eax, 3
+	mov ebx, 0
+	mov ecx, temp
+	mov edx, 1
+	int 80h
+	pop ebx
+	cmp byte[temp], 10
+	je end_readingL
+	inc byte[lost_len]
+	mov al,byte[temp]
+	mov byte[ebx], al
+	inc ebx
+	jmp readingL
+
+end_readingL:
+	push ebx
+	mov 	word[i],0
+	mov 	word[j],0
+	mov		ebx,string
+	
+outer_loop:
+	mov		ax,word[string_len]
+	cmp		ax,word[i]
+	je		end_outer
+	
+	mov 	word[j],0
+inner_loop:
+	mov		ax,word[lost_len]
+	cmp		ax,word[j]
+	je 		found
+		
+okcontinuing:
+	mov		ebx,string
+	add		bx,word[i]
+	add		bx,word[j]
+	mov		ecx,lost
+	add		cx,word[j]
+	
+	inc		word[j]
+	
+	mov		al,byte[ebx]
+	cmp		byte[ecx],al
+	
+
+	
+	je		inner_loop
+	jne 	end_inner
+
+end_inner:
+	inc		word[i]
+	jmp		outer_loop
+	
+	
+end_outer:
+	jmp done
+	
+found:
+	
+	mov		ebx,string
+	add		bx,word[i]
+	add		bx,word[j]
+
+	cmp		byte[ebx],32
+	je 		foundfinally
+	
+	jmp		okcontinuing
+	
+foundfinally:
+	inc	word[wordcounter]
+	jmp	okcontinuing
+
+	
+	
+done:
+	cmp	word[wordcounter],0
+	je	notfoundprint
+	
+	
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, newline
+	mov edx, 1
+	int 80h
+	
+foundprint:
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, msg3
+	mov edx, size3
+	int 80h
+	
+	mov	ax,word[wordcounter]
+	mov	word[num],ax
+	call print_num
+	
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, newline
+	mov edx, 1
+	int 80h
+	
+	jmp exit
+	
+notfoundprint:
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, msg4
+	mov edx, size4
+	int 80h
+	jmp exit
+	
+exit:
+	mov eax, 1
+	mov ebx, 0
+	int 80h	
+	
+print_num:						;;Function to print number
+	
+	mov byte[count],0
+	pusha
+	;cmp word[num],0
+	;je print_zero_or_not
+extract_no:
+	cmp word[num], 0
+	je print_no
+	inc byte[count]
+	mov dx, 0
+	mov ax, word[num]
+	mov bx, 10
+	div bx
+	push dx
+	mov word[num], ax
+	jmp extract_no
+print_no:
+	cmp byte[count], 0
+	je end_print
+	dec byte[count]
+	pop dx
+	mov byte[temp], dl
+	add byte[temp], 30h
+	mov eax, 4
+	mov ebx, 1
+	mov ecx, temp
+	mov edx, 1
+	int 80h
+	jmp print_no
+end_print:
+	popa
+	ret
+_____________________________________________________________________________________________
+5.Write a program to read n two digit numbers and sort them in ascending order.
+
+section .data
+	msg1:db 'Enter number of elements:'
+	l1:equ $-msg1
+	msg2:db 'Enter each element:'
+	l2:equ $-msg2
+	msg3: db 'Sorted array',10
+	l3: equ $-msg3
+	tab:db 9
+
+	
+section .bss
+num: resw 1
+temp: resw 1
+count: resw 1
+array: resw 100
+array1: resw 100
+n: resw 1
+	
+section .text
+global _start:
+	_start:
+	mov eax,4
+     	mov ebx,1
+	mov ecx,msg1
+	mov edx,l1
+	int 80h
+	call read_num
+	mov cx,word[num]
+	mov word[n],cx
+	
+	mov esi,array1
+	mov eax,0 
+	call read_array
+	
+	mov esi,array1
+	call sort_array
+	
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg3
+	mov edx,l3
+	int 80h
+	
+	mov ebx,array1
+	mov eax,0
+	call print_array
+end:
+mov eax,1
+mov ebx,0
+int 80h
+
+sort_array:
+	pusha
+	mov ecx,1
+	loop1:
+		mov ax,word[esi+2*ecx]
+		mov edx,ecx
+		dec edx
+		while:
+			cmp ax,word[esi+2*edx]
+			ja end_while
+			copy:
+				mov bx,word[esi+2*edx]
+				inc edx
+				mov word[esi+2*edx],bx
+				dec edx
+				dec edx
+				cmp dx,0
+				jae while
+		end_while:
+			inc edx
+			mov word[esi+2*edx],ax
+			inc ecx
+			cmp cx,word[n]
+			jb loop1
+	
+	end_loop1:
+		popa
+		ret				
+	
+read_array:
+	pusha
+	mov eax,0
+	read_loop:
+		cmp ax,word[n]
+		je end_aread
+		call print_msg
+		call read_num
+		mov cx,word[num]
+		mov word[esi+2*eax],cx
+		inc eax
+		jmp read_loop
+	end_aread:
+		popa
+		ret
+
+print_msg:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,msg2
+	mov edx,l2
+	int 80h	
+	popa
+	ret
+
+print_array:
+	pusha
+	print_loop:
+		cmp ax,word[n]
+		je end_print1
+		mov cx,word[ebx+2*eax]
+		mov word[num],cx
+		call print_num
+		call print_tab
+		inc eax
+		jmp print_loop
+	end_print1:
+	popa
+	ret	
+	
+	
+print_tab:
+	pusha
+	mov eax,4
+	mov ebx,1
+	mov ecx,tab
+	mov edx,1
+	int 80h
+	popa
+	ret
+	
+read_num:
+	pusha 
+	mov word[num],0
+	reading:
+		mov eax,3
+		mov ebx,0
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		cmp word[temp],10
+		je end_read
+		mov ax,word[num]
+		mov bx,10
+		mul bx
+		mov bx,word[temp]
+		sub bx,30h
+		add ax,bx
+		mov word[num],ax
+		jmp reading
+	
+	end_read:
+		popa
+		ret
+
+print_num:
+	pusha
+	mov word[count],0
+	
+	extracting:
+		mov ax,word[num]
+		cmp ax,0
+		je printing
+		mov bx,10
+		mov dx,0
+		div bx
+		push dx
+		mov word[num],ax
+		inc word[count]
+		jmp extracting
+	printing:
+		cmp word[count],0
+		je end_printing
+		pop dx
+		dec word[count]
+		mov word[temp],dx
+		add word[temp],30h
+		mov eax,4
+		mov ebx,1
+		mov ecx,temp
+		mov edx,1
+		int 80h
+		jmp printing
+	end_printing:
+		popa
+		ret
+____________________________________________________________________________
+
+6.Write a program to read a string of size n and two numbers n1 and n2 (1<=n1<=n2<=n), compute the substring between the indices n1 and n2 and print the result.
+
+section .bss
+   string: resb 600
+   temp : resw 1
+   num :resw 2
+   n1:resw 2
+   n2:resw 2
+  
+section .data
+  s1:db 'Enter String :'
+  l1:equ $-s1
+  s2:db 'Enter n1 :'
+  l2:equ $-s2
+  s3:db 'Enter n2 :'
+  l3:equ $-s3
+  s4:db 'The Substring is :'
+  l4:equ $-s4
+  string_len: db 0
+  
+section .text
+   global _start:
+   _start:
+   
+          mov eax,4
+          mov ebx,1
+          mov ecx,s1
+          mov edx,l1
+          int 80h
+          
+          mov ebx,string
+          
+          reading:
+          push ebx
+          mov eax, 3
+          mov ebx, 0
+          mov ecx, temp
+          mov edx, 1
+          int 80h
+          pop ebx
+          cmp byte[temp],10
+          je end_reading
+          inc byte[string_len]
+          mov al,byte[temp]
+          mov byte[ebx],al
+          inc ebx
+          jmp reading
+          
+          end_reading:
+          mov byte[ebx],0
+          mov ebx,string
+          
+          mov eax,4 ;print sente enter n1
+          mov ebx,1
+          mov ecx,s2
+          mov edx,l2
+          int 80h
+                
+          call read_num ;read n1
+          mov cx,word[num]
+          mov word[n1],cx
+          
+          
+          
+          mov eax,4 ;print sente enter n2
+          mov ebx,1
+          mov ecx,s3
+          mov edx,l3
+          int 80h
+          
+          call read_num        ;read n2
+          mov cx,word[num]
+          mov word[n2],cx
+          
+          mov eax,4 ;print sente substring is
+          mov ebx,1
+          mov ecx,s4
+          mov edx,l4
+          int 80h
+          
+          print_string:
+          pusha
+          mov ebx,string
+          
+          
+          
+          printing:
+         
+          mov ax,word[temp]
+          mov word[temp],ax
+          
+          mov dx,word[n1]
+          cmp word[temp],dx
+          jl continue
+          
+          mov dx,word[n2]
+          cmp word[temp], dx
+          je exit
+          
+          push ebx
+          mov eax, 4
+          mov ebx, 1
+          mov ecx, temp
+          mov edx, 1
+          int 80h
+          continue:
+          pop ebx
+          inc ebx
+          jmp printing
+          
+        ;   end_printing:
+        ;   popa
+        ;   ret
+          
+          exit:
+          mov eax,1
+          mov ebx,0
+          int 80h
+          
+          
+          read_num:
+          
+          pusha
+          mov dword[num],0
+          loop_read:
+          mov eax, 3
+          mov ebx, 0
+          mov ecx, temp
+          mov edx,1
+          int 80h
+          
+          cmp byte[temp],10
+          je end_read
+          mov eax,dword[num]
+          mov ebx,10
+          mul ebx
+          mov ebx, 0
+          movzx ebx,byte[temp]
+          sub ebx,30h
+          
+          add eax, ebx
+          mov dword[num],eax
+          jmp loop_read
+          end_read:
+          popa
+          ret
