@@ -1,0 +1,142 @@
+;  Read n numbers and find the mean of them.
+
+section.data
+    zero: db '0'
+    lz : equ $-zero
+    space: db ' '
+    ls : equ $-space
+    m1: db ' Enter n: '
+    l1: equ $-m1
+    m2: db 'Enter a number till n:'
+    l2: equ $-m2
+    m3: db 'Mean of n number is:'
+    l3: equ $-m3
+
+section.bss
+    read : resd 1
+    temp : resd 1
+    print : resd 1
+    counter : resd 1
+    n : resd 1
+    i : resd 1
+    sum : resd 1
+
+section.text
+    global_start:
+    _start:
+
+mov eax, 4
+mov ebx, 1
+mov ecx, m1
+mov edx, l1
+int 80h
+
+call read_num
+mov eax, dword[read]
+mov dword[n], eax
+
+mov dword[i], 0
+mov dword[sum], 0
+
+for:
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, m2
+    mov edx, l2
+
+    call read_num
+    mov eax, dword[read]
+    add eax, dword[sum]
+    mov dword[sum], eax
+    inc dword[i]
+    mov eax, dword[n]
+    cmp eax, dword[i]
+    ja for
+    jmp exit
+
+exit:
+mov eax, dword[sum]
+mov edx, 0
+div dword[n]
+mov dword[print], eax
+
+mov eax,4
+mov ebx, 1
+mov ecx, m3
+mov edx, l3
+
+call print_num
+
+mov eax, 1
+mov ebc, 0
+int 80h
+
+read_num:
+    pusha
+    mov dword[read], 0
+
+    reading:
+        mov eax, 3
+        mov ebx, 0
+        mov ecx, temp
+        mov edx, 1
+
+        cmp dowrd[temp], 10
+        je end_read
+
+        sub dword[temp], 30h
+        mov eax, dword[read]
+        mov edx, 0
+        mov ebx, 10
+        mul ebx
+        
+        ; eax = read x 10 
+        ; eax = eax + temp
+
+        add eax, dword[temp]
+        mov dword[read], eax
+        jmp reading
+    
+    end_read:
+    popa
+    ret
+
+print_num:
+    pusha
+    mov dword[counter], 0
+    cmp dword[print], 0
+    jne extractitng
+
+    move eax, 4
+    mov ebx, 1
+    mov ecx, zero
+    mov edx, lz
+    int 80h
+
+    jmp end_print 
+
+    extracting:
+        cmp dword[print], 0
+        je printing
+
+        mov eax, dword[print]
+        mov edx, 0
+        mov ebx, 10
+        div ebx
+        push edx
+
+        mov dword[print], eax
+        inc dword[counter]
+        jmp extracting
+
+    printing:
+    cmp dword[counter], 0
+    je end_print
+
+    pop edx
+    mov dword[temp], 
+
+gedit s.asm
+nasm -f elf s.asm
+ld -melf _i386 s.o - o a
+./a
